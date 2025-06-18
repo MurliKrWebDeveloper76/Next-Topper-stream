@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextTopper Stream Player</title>
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- HLS.js -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --dark: #2d3436;
+            --light: #f5f6fa;
+            --accent: #fd79a8;
+            --success: #00b894;
+            --gradient: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        body {
+            background-color: #f9f9f9;
+            color: var(--dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: var(--gradient);
+            opacity: 0.1;
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .circle:nth-child(1) {
+            width: 150px;
+            height: 150px;
+            top: 10%;
+            left: 20%;
+            animation-delay: 0s;
+        }
+
+        .circle:nth-child(2) {
+            width: 250px;
+            height: 250px;
+            top: 60%;
+            left: 70%;
+            animation-delay: 3s;
+        }
+
+        .circle:nth-child(3) {
+            width: 100px;
+            height: 100px;
+            top: 80%;
+            left: 10%;
+            animation-delay: 6s;
+        }
+
+        .circle:nth-child(4) {
+            width: 200px;
+            height: 200px;
+            top: 30%;
+            left: 80%;
+            animation-delay: 9s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-50px) rotate(10deg);
+            }
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 2rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 15px 40px rgba(108, 92, 231, 0.4);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 1rem;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        /* Input Section */
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 184, 148, 0.5);
+        }
+
+        .btn-danger {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 5px 15px rgba(253, 121, 168, 0.4);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(253, 121, 168, 0.5);
+        }
+
+        /* Video Player */
+        #videoPlayer {
+            width: 100%;
+            border-radius: 15px;
+            background-color: #000;
+            aspect-ratio: 16/9;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        select {
+            padding: 10px 15px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            font-size: 1rem;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Status Messages */
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 1rem;
+            display: none;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background-color: rgba(0, 184, 148, 0.1);
+            color: var(--success);
+            display: block;
+            border-left: 4px solid var(--success);
+        }
+
+        .status.error {
+            background-color: rgba(255, 107, 129, 0.1);
+            color: #ff6b81;
+            display: block;
+            border-left: 4px solid #ff6b81;
+        }
+
+        .status.info {
+            background-color: rgba(108, 92, 231, 0.1);
+            color: var(--primary);
+            display: block;
+            border-left: 4px solid var(--primary);
+        }
+
+        /* Download Section */
+        .segment-list {
+            margin-top: 1.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px dashed #eee;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .segment-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .segment-item:hover {
+            background-color: rgba(108, 92, 231, 0.05);
+            transform: translateX(5px);
+        }
+
+        .segment-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            color: var(--primary);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-right: 0;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* Pulse Animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+
+    <header data-aos="fade-down" data-aos-duration="800">
+        <div class="container">
+            <div class="logo-container">
+                <img src="https://i.supaimg.com/dd053cc2-3d07-4c93-bbe9-ccd4565ea1cf.webp" alt="NextTopper Logo" class="logo pulse">
+            </div>
+            <h1>NextTopper Stream Player</h1>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card" data-aos="fade-up" data-aos-delay="200">
+            <div class="input-group">
+                <label for="videoUrl"><i class="fas fa-link"></i> Paste NextToppers or CloudFront URL:</label>
+                <input type="text" id="videoUrl" placeholder="https://nexttoppers.com/... or https://cloudfront.net/.../playlist.m3u8">
+                <div id="urlStatus" class="status"></div>
+            </div>
+            
+            <div class="btn-group">
+                <button id="loadBtn" class="btn btn-primary"><i class="fas fa-play"></i> Load Video</button>
+                <button id="copyBtn" class="btn btn-success"><i class="fas fa-copy"></i> Copy Stream Link</button>
+                <button id="fetchSegmentsBtn" class="btn btn-danger"><i class="fas fa-download"></i> Fetch Segments</button>
+            </div>
+        </section>
+        
+        <section class="card" data-aos="fade-up" data-aos-delay="400">
+            <div id="videoContainer">
+                <video id="videoPlayer" controls></video>
+                <div class="controls">
+                    <label for="qualitySelect"><i class="fas fa-tachometer-alt"></i> Quality:</label>
+                    <select id="qualitySelect">
+                        <option value="auto">Auto</option>
+                    </select>
+                    <div id="playerStatus" class="status"></div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="card" id="downloadSection" style="display: none;" data-aos="fade-up" data-aos-delay="600">
+            <h3><i class="fas fa-file-download"></i> Video Segments</h3>
+            <p>Download individual .ts segments or use with ffmpeg to merge:</p>
+            <div id="segmentList" class="segment-list"></div>
+            <div class="btn-group" style="margin-top: 15px;">
+                <button id="downloadAllBtn" class="btn btn-primary"><i class="fas fa-download"></i> Download All Segments</button>
+            </div>
+            <div id="ffmpegCommand" style="margin-top: 15px; padding: 15px; background: rgba(108, 92, 231, 0.05); border-radius: 10px; display: none;">
+                <h4><i class="fas fa-terminal"></i> FFmpeg Merge Command:</h4>
+                <code id="ffmpegCmdText" style="display: block; margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; overflow-x: auto;"></code>
+                <button id="copyFfmpegBtn" class="btn btn-success"><i class="fas fa-copy"></i> Copy FFmpeg Command</button>
+            </div>
+        </section>
+    </main>
+    
+    <footer data-aos="fade-up" data-aos-delay="800">
+        <div class="container">
+            <p>Made with <i class="fas fa-heart" style="color: var(--accent);"></i> by Murli Kr</p>
+            <div class="social-links">
+                <a href="#" target="_blank"><i class="fab fa-telegram"></i></a>
+                <a href="#" target="_blank"><i class="fab fa-youtube"></i></a>
+                <a href="#" target="_blank"><i class="fas fa-globe"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AOS Animation JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS animations
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const videoUrlInput = document.getElementById('videoUrl');
+            const loadBtn = document.getElementById('loadBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const fetchSegmentsBtn = document.getElementById('fetchSegmentsBtn');
+            const downloadAllBtn = document.getElementById('downloadAllBtn');
+            const videoPlayer = document.getElementById('videoPlayer');
+            const qualitySelect = document.getElementById('qualitySelect');
+            const urlStatus = document.getElementById('urlStatus');
+            const playerStatus = document.getElementById('playerStatus');
+            const downloadSection = document.getElementById('downloadSection');
+            const segmentList = document.getElementById('segmentList');
+            const ffmpegCommand = document.getElementById('ffmpegCommand');
+            const ffmpegCmdText = document.getElementById('ffmpegCmdText');
+            const copyFfmpegBtn = document.getElementById('copyFfmpegBtn');
+            
+            // Variables
+            let hls;
+            let currentMasterPlaylist = '';
+            let currentStreamUrl = '';
+            let segments = [];
+            
+            // Check if HLS is supported
+            if (Hls.isSupported()) {
+                hls = new Hls();
+            } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+                // For Safari
+                videoPlayer.addEventListener('play', function() {
+                    if (currentStreamUrl) {
+                        videoPlayer.src = currentStreamUrl;
+                    }
+                });
+            } else {
+                playerStatus.textContent = 'HLS is not supported in your browser. Please try a different browser.';
+                playerStatus.className = 'status error';
+                playerStatus.style.display = 'block';
+            }
+            
+            // Event Listeners
+            loadBtn.addEventListener('click', loadVideo);
+            copyBtn.addEventListener('click', copyStreamLink);
+            fetchSegmentsBtn.addEventListener('click', fetchSegments);
+            downloadAllBtn.addEventListener('click', downloadAllSegments);
+            copyFfmpegBtn.addEventListener('click', copyFfmpegCommand);
+            
+            // Functions
+            function loadVideo() {
+                const inputUrl = videoUrlInput.value.trim();
+                
+                if (!inputUrl) {
+                    showStatus(urlStatus, 'Please enter a valid URL', 'error');
+                    return;
+                }
+                
+                // Try to extract m3u8 URL from NextToppers or CloudFront URL
+                let m3u8Url = inputUrl;
+                
+                // If it's a NextToppers URL, try to extract the m3u8
+                if (inputUrl.includes('nexttoppers.com')) {
+                    // Extract the file_url parameter
+                    const urlParams = new URLSearchParams(inputUrl.split('?')[1]);
+                    const fileUrl = urlParams.get('file_url');
+                    
+                    if (fileUrl) {
+                        m3u8Url = decodeURIComponent(fileUrl);
+                    } else {
+                        showStatus(urlStatus, 'Could not extract m3u8 from NextToppers URL', 'error');
+                        return;
+                    }
+                } else if (inputUrl.includes('cloudfront.net') && !inputUrl.endsWith('.m3u8')) {
+                    // Ensure CloudFront URLs end with playlist.m3u8
+                    m3u8Url = inputUrl.endsWith('/') ? 
+                        `${inputUrl}playlist.m3u8` : 
+                        `${inputUrl}/playlist.m3u8`;
+                }
+                
+                currentStreamUrl = m3u8Url;
+                showStatus(urlStatus, `Stream URL ready!`, 'success');
+                
+                // Load the video
+                if (Hls.isSupported()) {
+                    loadHlsVideo(m3u8Url);
+                } else {
+                    // Fallback for Safari
+                    videoPlayer.src = m3u8Url;
+                    videoPlayer.load();
+                    showStatus(playerStatus, 'Video loaded (native HLS support)', 'success');
+                }
+            }
+            
+            function loadHlsVideo(url) {
+                if (hls) {
+                    hls.destroy();
+                }
+                
+                hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(videoPlayer);
+                
+                hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
+                    showStatus(playerStatus, 'Video loaded successfully!', 'success');
+                    
+                    // Clear existing quality options
+                    while (qualitySelect.options.length > 1) {
+                        qualitySelect.remove(1);
+                    }
+                    
+                    // Add quality options if available
+                    if (data.levels && data.levels.length > 1) {
+                        data.levels.forEach((level, index) => {
+                            const option = document.createElement('option');
+                            option.value = index;
+                            option.text = `${level.height}p (${Math.round(level.bitrate / 1000)}kbps)`;
+                            qualitySelect.appendChild(option);
+                        });
+                    }
+                });
+                
+                hls.on(Hls.Events.ERROR, function(event, data) {
+                    if (data.fatal) {
+                        switch(data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                showStatus(playerStatus, 'Network error - failed to load video', 'error');
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                showStatus(playerStatus, 'Media error - failed to load video', 'error');
+                                break;
+                            default:
+                                showStatus(playerStatus, 'Unknown error - failed to load video', 'error');
+                                break;
+                        }
+                    }
+                });
+                
+                // Handle quality change
+                qualitySelect.addEventListener('change', function() {
+                    if (this.value === 'auto') {
+                        hls.currentLevel = -1; // Auto
+                    } else {
+                        hls.currentLevel = parseInt(this.value);
+                    }
+                });
+            }
+            
+            function copyStreamLink() {
+                if (!currentStreamUrl) {
+                    showStatus(urlStatus, 'No stream URL available to copy', 'error');
+                    return;
+                }
+                
+                navigator.clipboard.writeText(currentStreamUrl)
+                    .then(() => {
+                        showStatus(urlStatus, 'Stream link copied to clipboard!', 'success');
+                    })
+                    .catch(err => {
+                        showStatus(urlStatus, 'Failed to copy link: ' + err, 'error');
+                    });
+            }
+            
+            function fetchSegments() {
+                if (!currentStreamUrl) {
+                    showStatus(urlStatus, 'No stream URL available to fetch segments', 'error');
+                    return;
+                }
+                
+                showStatus(urlStatus, 'Fetching segments...', 'info');
+                
+                // Fetch the m3u8 file
+                fetch(currentStreamUrl)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.text();
+                    })
+                    .then(m3u8Content => {
+                        // Parse the m3u8 to get segments
+                        const lines = m3u8Content.split('\n');
+                        const baseUrl = currentStreamUrl.substring(0, currentStreamUrl.lastIndexOf('/') + 1);
+                        segments = [];
+                        
+                        for (let i = 0; i < lines.length; i++) {
+                            const line = lines[i].trim();
+                            if (line && !line.startsWith('#')) {
+                                const segmentUrl = line.includes('://') ? line : baseUrl + line;
+                                segments.push(segmentUrl);
+                            }
+                        }
+                        
+                        if (segments.length === 0) {
+                            throw new Error('No segments found in the playlist');
+                        }
+                        
+                        // Display segments
+                        displaySegments(segments);
+                        showStatus(urlStatus, `Found ${segments.length} segments!`, 'success');
+                        downloadSection.style.display = 'block';
+                        
+                        // Generate FFmpeg command
+                        generateFfmpegCommand(segments);
+                    })
+                    .catch(error => {
+                        showStatus(urlStatus, 'Error fetching segments: ' + error.message, 'error');
+                        console.error('Error:', error);
+                    });
+            }
+            
+            function displaySegments(segments) {
+                segmentList.innerHTML = '';
+                
+                segments.forEach((segment, index) => {
+                    const segmentItem = document.createElement('div');
+                    segmentItem.className = 'segment-item';
+                    
+                    const segmentText = document.createElement('span');
+                    segmentText.textContent = `Segment ${index + 1}: ${segment.substring(segment.lastIndexOf('/') + 1)}`;
+                    
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'btn btn-primary';
+                    downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download';
+                    downloadBtn.style.padding = '8px 15px';
+                    downloadBtn.style.fontSize = '0.9rem';
+                    downloadBtn.onclick = () => downloadSegment(segment, index);
+                    
+                    segmentItem.appendChild(segmentText);
+                    segmentItem.appendChild(downloadBtn);
+                    segmentList.appendChild(segmentItem);
+                });
+            }
+            
+            function downloadSegment(url, index) {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `segment_${index + 1}.ts`;
+                a.target = '_blank';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+            
+            function downloadAllSegments() {
+                if (segments.length === 0) {
+                    showStatus(urlStatus, 'No segments available to download', 'error');
+                    return;
+                }
+                
+                showStatus(urlStatus, `Downloading ${segments.length} segments...`, 'info');
+                
+                // Download each segment one by one
+                segments.forEach((segment, index) => {
+                    setTimeout(() => {
+                        downloadSegment(segment, index);
+                    }, index * 1000); // Stagger downloads by 1 second
+                });
+            }
+            
+            function generateFfmpegCommand(segments) {
+                if (segments.length === 0) return;
+                
+                // Create a file list for ffmpeg
+                const fileList = segments.map((segment, index) => `file '${segment}'`).join('\n');
+                
+                // Basic ffmpeg command to concatenate segments
+                const cmd = `# Save this as files.txt and run:\nffmpeg -f concat -safe 0 -i files.txt -c copy output.mp4\n\n# Or directly:\nffmpeg -i "${segments[0].substring(0, segments[0].lastIndexOf('/') + 1)}playlist.m3u8" -c copy output.mp4\n\n# File list:\n${fileList}`;
+                
+                ffmpegCmdText.textContent = cmd;
+                ffmpegCommand.style.display = 'block';
+            }
+            
+            function copyFfmpegCommand() {
+                navigator.clipboard.writeText(ffmpegCmdText.textContent)
+                    .then(() => {
+                        showStatus(urlStatus, 'FFmpeg command copied to clipboard!', 'success');
+                    })
+                    .catch(err => {
+                        showStatus(urlStatus, 'Failed to copy command: ' + err, 'error');
+                    });
+            }
+            
+            function showStatus(element, message, type) {
+                element.textContent = message;
+                element.className = `status ${type}`;
+                element.style.display = 'block';
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>
